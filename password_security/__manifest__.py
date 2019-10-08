@@ -1,21 +1,26 @@
 # Copyright 2015 LasLabs Inc.
 # Copyright 2018 Modoolar <info@modoolar.com>.
+# Copyright 2019 initOS GmbH
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 {
 
     'name': 'Password Security',
     "summary": "Allow admin to set password security requirements.",
-    'version': '12.0.1.1.0',
+    'version': '12.0.1.1.1',
     'author':
         "LasLabs, "
         "Kaushal Prajapati, "
         "Tecnativa, "
+        "initOS GmbH, "
         "Odoo Community Association (OCA)",
     'category': 'Base',
     'depends': [
         'auth_signup',
         'auth_password_policy_signup',
     ],
+    'external_dependencies': {
+        'python': ['zxcvbn'],
+    },
     "website": "https://github.com/OCA/server-auth",
     "license": "LGPL-3",
     "data": [

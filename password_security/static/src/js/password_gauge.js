@@ -5,23 +5,8 @@ odoo.define('password_security.policy', function (require) {
 
     var core = require('web.core');
     var _t = core._t;
-    var Policy = require('auth_password_policy').Policy;
-    require('auth_password_policy').recommendations.policies = [
-        new Policy({
-            password_length: 12,
-            password_upper: 3,
-            password_lower: 3,
-            password_numeric: 3,
-            password_special: 3,
-        }),
-        new Policy({
-            password_length: 16,
-            password_upper: 4,
-            password_lower: 4,
-            password_numeric: 4,
-            password_special: 4,
-        }),
-    ];
+    var auth_password_policy = require('auth_password_policy');
+    var Policy = auth_password_policy.Policy;
 
     Policy.include({
 
@@ -33,6 +18,7 @@ odoo.define('password_security.policy', function (require) {
          * @param {Number} [info.password_upper=1]
          * @param {Number} [info.password_numeric=1]
          * @param {Number} [info.password_special=1]
+         * @param {Number} [info.password_estimate=3]
          */
         init: function (info) {
             this._super(info);
@@ -42,6 +28,7 @@ odoo.define('password_security.policy', function (require) {
             this._password_upper = info.password_upper || 1;
             this._password_numeric = info.password_numeric || 1;
             this._password_special = info.password_special || 1;
+            this._password_estimate = info.password_estimate || 3;
         },
 
         toString: function () {
@@ -113,6 +100,10 @@ odoo.define('password_security.policy', function (require) {
             return Math.min(count / min_count, 1.0);
         },
 
+        _estimate: function (password) {
+            return Math.min(zxcvbn(password).score / 4.0, 1.0);
+        },
+
         score: function (password) {
             var lengthscore = Math.min(
                 password.length / this._password_length, 1.0
@@ -125,11 +116,36 @@ odoo.define('password_security.policy', function (require) {
                 "\\d", this._password_numeric, password);
             var specialscore = this._calculate_password_score(
                 "[\\W_]", this._password_special, password);
+            var estimatescore = this._estimate(password);
 
             return (
                 lengthscore * loverscore * upperscore *
-                numericscore * specialscore);
+                numericscore * specialscore * estimatescore);
         },
     });
+
+    var recommendations = {
+        score: auth_password_policy.recommendations.score,
+        policies: [
+            new Policy({
+                password_length: 12,
+                password_upper: 3,
+                password_lower: 3,
+                password_numeric: 3,
+                password_special: 3,
+                password_estimate: 3,
+            }),
+            new Policy({
+                password_length: 16,
+                password_upper: 4,
+                password_lower: 4,
+                password_numeric: 4,
+                password_special: 4,
+                password_estimate: 4,
+            }),
+        ]
+    };
+
+    auth_password_policy.recommendations = recommendations;
 
 });
